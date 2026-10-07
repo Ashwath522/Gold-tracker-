@@ -45,8 +45,20 @@ export default function HomePage() {
         const analysisJson = await resAnalysis.json();
         setData(analysisJson);
       } else {
-        const detail = await resAnalysis.json().catch(() => null);
-        setError(detail?.detail || `Analysis request failed (${resAnalysis.status})`);
+        const responseText = await resAnalysis.text();
+        let detail: { detail?: string } | null = null;
+        try {
+          detail = JSON.parse(responseText);
+        } catch {
+          // Keep the first part of non-JSON proxy errors visible to make deployment issues diagnosable.
+        }
+        const fallback = responseText.trim().slice(0, 200);
+        setError(
+          detail?.detail ||
+            (fallback
+              ? `Analysis request failed (${resAnalysis.status}): ${fallback}`
+              : `Analysis request failed (${resAnalysis.status})`),
+        );
       }
       if (resHistory.ok) {
         const historyJson = await resHistory.json();
