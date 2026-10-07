@@ -1,6 +1,8 @@
 import base64
 import secrets
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -72,9 +74,21 @@ app.include_router(model_router, prefix="/api")
 
 @app.get("/api/health")
 def health_check():
-    return {
+    info = {
         "status": "healthy",
         "app": settings.APP_NAME,
         "provider": settings.GOLD_PRICE_PROVIDER,
-        "timezone": settings.TIMEZONE
+        "timezone": settings.TIMEZONE,
+        "goldapi_key_set": bool(settings.GOLDAPI_KEY),
+        "price_multiplier": round(settings.price_multiplier, 4),
+        "auth_enabled": bool(settings.APP_USERNAME and settings.APP_PASSWORD),
     }
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+            info["db"] = "ok"
+    except Exception as exc:
+        info["status"] = "degraded"
+        info["db"] = f"error: {type(exc).__name__}"
+        return JSONResponse(status_code=503, content=info)
+    return info

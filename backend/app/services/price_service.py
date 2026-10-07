@@ -103,6 +103,28 @@ class PriceService:
                     is_stale=True,
                     notes=f"Stale data (provider failed: {str(e)})"
                 )
+            last_saved = (
+                self.db.query(GoldPrice)
+                .order_by(GoldPrice.date.desc())
+                .first()
+            )
+            if last_saved:
+                fetched_at = last_saved.updated_at or now_utc
+                if fetched_at.tzinfo is None:
+                    fetched_at = fetched_at.replace(tzinfo=timezone.utc)
+                return LatestPriceResponse(
+                    price_24k_inr=last_saved.price_24k_inr,
+                    price_22k_inr=last_saved.price_22k_inr,
+                    price_24k_10g_inr=round(last_saved.price_24k_inr * 10, 2),
+                    price_22k_10g_inr=round(last_saved.price_22k_inr * 10, 2) if last_saved.price_22k_inr else None,
+                    source=last_saved.source,
+                    source_timestamp=last_saved.source_timestamp,
+                    is_converted=last_saved.is_converted,
+                    fetched_at=fetched_at,
+                    benchmark_status=benchmark_status,
+                    is_stale=True,
+                    notes=f"Stale data: provider unavailable ({type(e).__name__})",
+                )
             raise RuntimeError(f"Could not fetch latest gold price from provider: {e}")
 
         # Update cache in database

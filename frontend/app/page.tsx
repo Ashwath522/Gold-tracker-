@@ -52,12 +52,15 @@ export default function HomePage() {
         } catch {
           // Keep the first part of non-JSON proxy errors visible to make deployment issues diagnosable.
         }
-        const fallback = responseText.trim().slice(0, 200);
+        const fallback = responseText.replace(/<[^>]*>/g, " ").trim().slice(0, 200);
+        const hint = responseText.trim().startsWith("<")
+          ? " Check BACKEND_URL and the backend deployment health endpoint."
+          : "";
         setError(
           detail?.detail ||
             (fallback
-              ? `Analysis request failed (${resAnalysis.status}): ${fallback}`
-              : `Analysis request failed (${resAnalysis.status})`),
+              ? `Analysis request failed (${resAnalysis.status}): ${fallback}${hint}`
+              : `Analysis request failed (${resAnalysis.status}).${hint}`),
         );
       }
       if (resHistory.ok) {
