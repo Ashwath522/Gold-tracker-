@@ -148,6 +148,7 @@ class PriceService:
             daily_record.source = price_data.source
             daily_record.source_timestamp = price_data.source_timestamp
             daily_record.is_converted = price_data.is_converted
+            daily_record.notes = price_data.notes
 
         self.db.commit()
 
@@ -205,6 +206,8 @@ class PriceService:
                 existing.price_22k_inr = item.price_22k_inr
                 existing.source = item.source
                 existing.source_timestamp = item.source_timestamp
+                existing.is_converted = item.is_converted
+                existing.notes = item.notes
 
         self.db.commit()
         return inserted_count
