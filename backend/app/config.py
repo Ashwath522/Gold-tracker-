@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # 13 May 2026 (10% BCD + 5% AIDC). Tune LOCAL_PREMIUM_PCT so the dashboard
     # matches the rate you actually see on PhonePe/Paytm.
     IMPORT_DUTY_PCT: float = Field(default=0.15)
-    LOCAL_PREMIUM_PCT: float = Field(default=0.0)
+    LOCAL_PREMIUM_PCT: float = Field(default=0.047)  # calibrated vs Paytm Bengaluru, 7 Oct 2026
 
     @property
     def price_multiplier(self) -> float:
