@@ -25,6 +25,7 @@ export default function HomePage() {
   const [history, setHistory] = useState<PricePoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"charts" | "valuation" | "tracker" | "portfolio" | "backtest" | "explanation">("charts");
   const [portfolioTrigger, setPortfolioTrigger] = useState(0);
 
@@ -33,6 +34,7 @@ export default function HomePage() {
       if (forceRefresh) setRefreshing(true);
       else setLoading(true);
 
+      setError(null);
       const url = forceRefresh ? "/api/analysis?force_refresh=true" : "/api/analysis";
       const [resAnalysis, resHistory] = await Promise.all([
         fetch(url),
@@ -42,6 +44,9 @@ export default function HomePage() {
       if (resAnalysis.ok) {
         const analysisJson = await resAnalysis.json();
         setData(analysisJson);
+      } else {
+        const detail = await resAnalysis.json().catch(() => null);
+        setError(detail?.detail || `Analysis request failed (${resAnalysis.status})`);
       }
       if (resHistory.ok) {
         const historyJson = await resHistory.json();
@@ -49,6 +54,7 @@ export default function HomePage() {
       }
     } catch (err) {
       console.error("Failed to load dashboard data", err);
+      setError("Cannot reach the backend. Is it running on port 8000?");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -66,6 +72,22 @@ export default function HomePage() {
   const handleInvestmentChanged = () => {
     setPortfolioTrigger((prev) => prev + 1);
   };
+
+  if (!loading && !data) {
+    return (
+      <div className="container" style={{ textAlign: "center", paddingTop: "6rem" }}>
+        <h2 style={{ fontSize: "1.25rem", color: "var(--rose)", fontWeight: 700 }}>
+          Could not load dashboard
+        </h2>
+        <p style={{ color: "var(--text-dim)", fontSize: "0.85rem", margin: "0.75rem 0 1.25rem" }}>
+          {error || "Unknown error"}
+        </p>
+        <button className="btn btn-primary btn-sm" onClick={() => fetchAnalysisData(false)}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   if (loading || !data) {
     return (

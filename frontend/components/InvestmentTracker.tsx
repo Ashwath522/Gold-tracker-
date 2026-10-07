@@ -17,7 +17,7 @@ export default function InvestmentTracker({ latestPrice, scoreReport, onInvestme
 
   // Form states prefilled with model recommendation
   const [formData, setFormData] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }),
     time_ist: new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false }),
     market_price: latestPrice.price_24k_inr,
     model_score: scoreReport.total_score,
@@ -180,7 +180,7 @@ export default function InvestmentTracker({ latestPrice, scoreReport, onInvestme
             onClick={() => {
               setEditingId(null);
               setFormData({
-                date: new Date().toISOString().split("T")[0],
+                date: new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }),
                 time_ist: new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false }),
                 market_price: latestPrice.price_24k_inr,
                 model_score: scoreReport.total_score,

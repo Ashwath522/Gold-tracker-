@@ -29,4 +29,15 @@ class Settings(BaseSettings):
     GST_RATE: float = Field(default=0.03)  # 3% GST on digital gold
     SELL_SPREAD_PCT: float = Field(default=0.03)  # 3% typical buy/sell spread
 
+    # India landed-price adjustment. Raw feeds (Yahoo / GoldAPI) are international
+    # prices converted to INR and exclude Indian import duty. Duty is 15% since
+    # 13 May 2026 (10% BCD + 5% AIDC). Tune LOCAL_PREMIUM_PCT so the dashboard
+    # matches the rate you actually see on PhonePe/Paytm.
+    IMPORT_DUTY_PCT: float = Field(default=0.15)
+    LOCAL_PREMIUM_PCT: float = Field(default=0.0)
+
+    @property
+    def price_multiplier(self) -> float:
+        return (1.0 + self.IMPORT_DUTY_PCT) * (1.0 + self.LOCAL_PREMIUM_PCT)
+
 settings = Settings()

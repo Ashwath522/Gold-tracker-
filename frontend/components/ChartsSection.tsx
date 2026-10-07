@@ -93,11 +93,11 @@ export default function ChartsSection({ analysisData, historyPoints }: Props) {
       {/* Visual Range Position Bar */}
       <div style={{ marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-          <span>90D Low: <strong>₹{metrics?.low?.toLocaleString("en-IN")}</strong></span>
+          <span>{selectedWindow}D Low: <strong>₹{metrics?.low?.toLocaleString("en-IN")}</strong></span>
           <span style={{ color: "var(--gold-bright)", fontWeight: 700 }}>
             Range Position: {metrics?.range_position}% ({metrics?.range_position < 35 ? "Lower Range (Attractive)" : metrics?.range_position > 65 ? "Upper Range (Heated)" : "Mid Range"})
           </span>
-          <span>90D High: <strong>₹{metrics?.high?.toLocaleString("en-IN")}</strong></span>
+          <span>{selectedWindow}D High: <strong>₹{metrics?.high?.toLocaleString("en-IN")}</strong></span>
         </div>
         <div className="range-bar-track">
           <div className="range-bar-fill" style={{ width: "100%" }} />

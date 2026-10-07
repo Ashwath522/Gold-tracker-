@@ -134,12 +134,16 @@ def compute_sub_scores(analysis: AnalysisResult, weights: ScoreWeights) -> Dict[
     return sub_scores
 
 def match_tier(score: float, fixed_amount: float = 35.0) -> RecommendationTier:
-    """Finds the corresponding tier based on score."""
+    """
+    Finds the tier for a score. Boundaries are half-open (a tier runs up to the
+    next tier's min_score), so fractional scores such as 30.5 never fall in a gap.
+    """
     clamped_score = float(np.clip(score, 0.0, 100.0))
-    for tier in RECOMMENDATION_TIERS:
-        if tier.min_score <= clamped_score <= tier.max_score:
+    for i, tier in enumerate(RECOMMENDATION_TIERS):
+        is_last = i == len(RECOMMENDATION_TIERS) - 1
+        upper = float("inf") if is_last else RECOMMENDATION_TIERS[i + 1].min_score
+        if clamped_score < upper:
             return tier
-    # Fallback to last tier if exactly 100
     return RECOMMENDATION_TIERS[-1]
 
 def generate_why_sentence(
