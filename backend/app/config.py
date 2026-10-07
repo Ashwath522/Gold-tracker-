@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     IMPORT_DUTY_PCT: float = Field(default=0.15)
     LOCAL_PREMIUM_PCT: float = Field(default=0.047)  # calibrated vs Paytm Bengaluru, 7 Oct 2026
 
+    # Optional HTTP Basic auth. When BOTH are set, every /api route except
+    # /api/health requires them. Set these before exposing the app publicly.
+    APP_USERNAME: str = Field(default="")
+    APP_PASSWORD: str = Field(default="")
+
     @property
     def price_multiplier(self) -> float:
         return (1.0 + self.IMPORT_DUTY_PCT) * (1.0 + self.LOCAL_PREMIUM_PCT)

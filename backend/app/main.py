@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+import base64
+import secrets
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -21,6 +23,36 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+def _authorized(header: str | None) -> bool:
+    if not header or not header.lower().startswith("basic "):
+        return False
+    try:
+        user, _, pwd = base64.b64decode(header[6:]).decode("utf-8").partition(":")
+    except Exception:
+        return False
+    ok_user = secrets.compare_digest(user.encode(), settings.APP_USERNAME.encode())
+    ok_pwd = secrets.compare_digest(pwd.encode(), settings.APP_PASSWORD.encode())
+    return ok_user and ok_pwd
+
+
+@app.middleware("http")
+async def basic_auth(request: Request, call_next):
+    """Opt-in HTTP Basic auth (enabled only when APP_USERNAME and APP_PASSWORD are set)."""
+    if (
+        settings.APP_USERNAME
+        and settings.APP_PASSWORD
+        and request.method != "OPTIONS"
+        and request.url.path != "/api/health"
+        and not _authorized(request.headers.get("authorization"))
+    ):
+        return Response(
+            "Unauthorized",
+            status_code=401,
+            headers={"WWW-Authenticate": 'Basic realm="Gold Tracker"'},
+        )
+    return await call_next(request)
+
 
 # Enable CORS for Next.js frontend (default ports 3000, 3001, etc.)
 app.add_middleware(

@@ -3,10 +3,18 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from .config import settings
 
 # SQLite connection args for multi-threaded FastAPI access
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+# Hosts hand out "postgres://" or "postgresql://" URLs. Pin the psycopg2 driver
+# explicitly so it works across SQLAlchemy versions (newer ones default to psycopg3).
+DATABASE_URL = settings.DATABASE_URL
+for prefix in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(prefix):
+        DATABASE_URL = "postgresql+psycopg2://" + DATABASE_URL[len(prefix):]
+        break
+
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    DATABASE_URL,
     connect_args=connect_args,
     pool_pre_ping=True
 )
